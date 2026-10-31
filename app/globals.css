@@ -32,6 +32,7 @@ a:focus-visible { outline: 2px solid var(--color-chestnut); outline-offset: 5px;
   flex-direction: column;
 }
 
+
 .app-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; font-size: 28px; letter-spacing: -1px; }
 .navigation { display: flex; margin-top: 26px; border-bottom: 1px solid var(--color-soft); }
@@ -57,4 +58,65 @@ h1 { margin: 8px 0 16px; font-size: clamp(28px, 5vw, 38px); line-height: 1.4; fo
   main { padding-block: 60px; }
   .notebook { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
   .notebook article + article { margin-top: 0; }
+}
+
+/* 주간은 실제 가용 높이를 나누고, 큰 글씨·아주 낮은 화면에서는 스크롤로 접근을 보장한다. */
+.app-shell:has(.weekly-diary) {
+  height: 100dvh;
+  min-height: 560px;
+  padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.app-shell:has(.weekly-diary) .app-header { flex-shrink: 0; }
+.app-shell:has(.weekly-diary) .brand { font-size: 24px; }
+.app-shell:has(.weekly-diary) .navigation { margin-top: 6px; flex-shrink: 0; }
+.app-shell:has(.weekly-diary) .navigation a { min-height: 44px; }
+.app-shell:has(.weekly-diary) main { display: flex; min-height: min-content; padding-block: 8px; }
+.app-shell:has(.weekly-diary) .app-footer { flex-shrink: 0; padding-top: 4px; font-size: 11px; }
+.weekly-diary { width: 100%; display: flex; flex-direction: column; gap: 4px; min-height: min-content; }
+.week-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-shrink: 0; }
+.week-heading h1 { margin: 0; font-size: 20px; letter-spacing: -.5px; }
+.week-heading h1 span { margin-left: 6px; font-size: 13px; color: var(--color-chestnut); }
+.week-heading > a { font-size: 12px; min-height: 32px; display: flex; align-items: center; color: var(--color-chestnut); }
+.week-toolbar { display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.week-toolbar a { display: grid; place-items: center; min-width: 44px; min-height: 44px; font-size: 20px; }
+.week-toolbar h2 { font-size: 14px; font-weight: 400; }
+.demo-notice { font-size: 12px; color: var(--color-muted); }
+.week-board { flex: 1; min-height: 288px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(72px, 1fr)); grid-auto-flow: column; border-top: 1px solid var(--color-soft); }
+.week-day { min-width: 0; padding: 5px 10px; display: flex; flex-direction: column; border-bottom: 1px solid var(--color-soft); }
+.week-day:nth-child(-n+4) { border-right: 1px solid var(--color-soft); }
+.week-day:hover { background: #EAE0D44D; }
+.week-day:focus-visible { outline-offset: -3px; }
+.week-day h2 { display: flex; align-items: baseline; gap: 6px; flex-shrink: 0; min-height: 26px; line-height: 1.4; font-size: 17px; font-weight: 400; }
+.week-day h2 span { font-size: 12px; color: var(--color-muted); }
+.visit-previews { height: 0; flex: 1; min-height: 0; min-width: 0; font-size: 13px; }
+.visit-previews li { height: 2.3em; display: flex; align-items: center; gap: 5px; }
+.visit-thumb { width: 26px; height: 26px; flex-shrink: 0; object-fit: cover; border-radius: 2px; }
+.no-photo { width: 26px; flex-shrink: 0; text-align: center; color: var(--color-chestnut); }
+.visit-name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+.visit-time { font-size: 11px; color: var(--color-muted); margin-left: auto; flex-shrink: 0; }
+.day-tail { margin-top: auto; flex-shrink: 0; color: var(--color-chestnut); font-size: 12px; line-height: 1.85; }
+.week-summary { min-width: 0; padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.week-summary > span { font-size: 10px; color: var(--color-muted); }
+.week-summary p { font-size: 13px; }
+.week-summary strong { font-weight: 500; }
+.back-to-week { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-chestnut); margin-bottom: 20px; }
+.daily-visits, .daily-entry { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--color-soft); }
+.daily-visits h2, .daily-entry h2 { font-size: 18px; font-weight: 500; margin-bottom: 16px; }
+.daily-visits h2 span { color: var(--color-chestnut); font-weight: 400; }
+.daily-visits li + li { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--color-soft); }
+.daily-visit-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.daily-visit-title h3 { overflow-wrap: anywhere; }
+.daily-visit-title time { flex-shrink: 0; font-size: 14px; color: var(--color-muted); }
+.daily-photo { width: min(100%, 640px); height: auto; max-height: 420px; object-fit: cover; margin-bottom: 12px; }
+
+@media (min-width: 768px) {
+  .app-shell:has(.weekly-diary) { width: min(100%, 1200px); padding: 24px 48px; }
+  .app-shell:has(.weekly-diary) main { padding-block: 12px; }
+  .week-heading h1 { font-size: 26px; }
+  .week-board { column-gap: 28px; }
+  .week-day { padding-inline: 16px; }
+  .week-day:nth-child(-n+4) { border-right: 0; }
+  .week-board { background: linear-gradient(var(--color-soft), var(--color-soft)) center / 1px 100% no-repeat; }
+  .visit-name { font-size: 14px; }
+  .visit-time { font-size: 12px; }
 }

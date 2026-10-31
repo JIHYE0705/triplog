@@ -15,7 +15,7 @@ export function Navigation() {
   return (
     <nav aria-label="주 메뉴" className="navigation">
       {destinations.map(({ href, label, mark }) => (
-        <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined}>
+        <Link key={href} href={href} aria-current={pathname === href || (href === "/" && pathname.startsWith("/diary/")) ? "page" : undefined}>
           <span aria-hidden="true" className="nav-mark">{mark}</span>
           {label}
         </Link>

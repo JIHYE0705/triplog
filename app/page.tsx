@@ -1,14 +1,25 @@
-export default function DiaryPage() {
+import Link from "next/link";
+import { WeeklyDiary } from "@/components/weekly-diary";
+import { demoDate, formatDate, shiftDate, weekDates } from "@/lib/calendar";
+import { demoEntries } from "@/lib/demo-diary";
+
+export default async function DiaryPage({ searchParams }: { searchParams: Promise<{ week?: string | string[] }> }) {
+  const { week } = await searchParams;
+  const dates = weekDates(typeof week === "string" ? week : demoDate);
+  const start = dates[0];
+  const previous = shiftDate(start, -7);
+  const next = shiftDate(start, 7);
+
   return (
-    <>
-      <p className="page-label">DIARY</p>
-      <h1>나의 다이어리</h1>
-      <p className="page-intro">다녀온 장소와 사진, 하루의 이야기를 한곳에.<br />같은 기록을 월간·주간·일간으로 모아볼 공간입니다.</p>
-      <section className="notebook" aria-label="다이어리 보기 안내">
-        <article><h2>월간</h2><p>달력 위에 여행의 시작과 끝을 잇는 옅은 밤크림색 띠를 표시합니다.</p></article>
-        <article><h2>주간</h2><p>펼친 수첩처럼 일주일 전체의 장소와 작은 사진을 한눈에 봅니다.</p></article>
-        <article><h2>일간</h2><p>하루에 다녀온 여러 장소의 소감과 하루 전체의 일기를 나누어 남깁니다.</p></article>
-      </section>
-    </>
+    <section className="weekly-diary" aria-labelledby="diary-title">
+      <div className="week-heading"><h1 id="diary-title">나의 다이어리 <span>주간</span></h1><Link href="/">샘플 주로</Link></div>
+      <nav className="week-toolbar" aria-label="주 이동">
+        {previous ? <Link href={`/?week=${previous}`} aria-label="이전 주">←</Link> : <span />}
+        <h2>{formatDate(start, { year: "numeric", month: "numeric", day: "numeric" })} — {formatDate(dates[6], { month: "numeric", day: "numeric" })}</h2>
+        {next ? <Link href={`/?week=${next}`} aria-label="다음 주">→</Link> : <span />}
+      </nav>
+      <p className="demo-notice">가상 기록 · 예시 사진 · 저장 기능 없음</p>
+      <WeeklyDiary dates={dates} entries={demoEntries} />
+    </section>
   );
 }
