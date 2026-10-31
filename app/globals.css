@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-suit), -apple-system, BlinkMacSystemFont, sans-serif;
+  --color-paper: #FAF8F4;
+  --color-cream: #B69A7D;
+  --color-soft: #EAE0D4;
+  --color-chestnut: #755B45;
+  --color-ink: #37302B;
+  --color-muted: #756B61;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+a { text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--color-chestnut); outline-offset: 5px; }
+::selection { background: var(--color-soft); }
+
+.app-shell {
+  width: min(100%, 1000px);
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-size: 28px; letter-spacing: -1px; }
+.navigation { display: flex; margin-top: 26px; border-bottom: 1px solid var(--color-soft); }
+.navigation a { flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px; min-height: 52px; color: var(--color-muted); border-bottom: 2px solid transparent; }
+.navigation a[aria-current="page"] { color: var(--color-chestnut); border-color: var(--color-chestnut); font-weight: 500; }
+.nav-mark { font-size: 11px; letter-spacing: 1px; }
+main { flex: 1; padding-block: 44px; }
+.page-label { color: var(--color-chestnut); font-size: 12px; letter-spacing: 2px; }
+h1 { margin: 8px 0 16px; font-size: clamp(28px, 5vw, 38px); line-height: 1.4; font-weight: 400; letter-spacing: -1px; }
+.page-intro { max-width: 520px; color: var(--color-muted); }
+.notebook { margin-top: 36px; padding-block: 28px; border-top: 1px solid var(--color-soft); border-bottom: 1px solid var(--color-soft); }
+.notebook article + article { margin-top: 24px; }
+.notebook h2 { margin-bottom: 6px; font-size: 18px; font-weight: 500; }
+.notebook p { color: var(--color-muted); max-width: 550px; }
+.app-footer { padding-top: 20px; border-top: 1px solid var(--color-soft); color: var(--color-muted); font-size: 13px; }
+.skip-link { position: fixed; top: -100px; left: 16px; background: var(--color-paper); padding: 8px 16px; z-index: 10; }
+.skip-link:focus { top: 16px; }
+
+@media (min-width: 768px) {
+  .app-shell { padding: 40px 48px; }
+  .navigation { justify-content: flex-start; gap: 32px; margin-top: 36px; }
+  .navigation a { flex: none; padding-inline: 8px; }
+  main { padding-block: 60px; }
+  .notebook { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .notebook article + article { margin-top: 0; }
+}
