@@ -7,9 +7,9 @@
 </p>
 
 <p align="center">
-  <img alt="단계: 기획 및 시안" src="https://img.shields.io/badge/status-planning_%26_prototype-647668?style=flat-square" />
-  <img alt="모바일 우선 웹앱" src="https://img.shields.io/badge/platform-mobile_first_web-2878dc?style=flat-square" />
-  <img alt="개인 여행 기록" src="https://img.shields.io/badge/focus-personal_travel_diary-36424a?style=flat-square" />
+  <img alt="단계: 기획 및 시안" src="https://img.shields.io/badge/status-planning_%26_prototype-B69A7D?style=flat-square" />
+  <img alt="모바일 우선 웹앱" src="https://img.shields.io/badge/platform-mobile_first_web-755B45?style=flat-square" />
+  <img alt="개인 여행 기록" src="https://img.shields.io/badge/focus-personal_travel_diary-37302B?style=flat-square" />
 </p>
 
 <p align="center">
