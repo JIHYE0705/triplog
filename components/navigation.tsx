@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const destinations = [
   { href: "/", label: "다이어리", mark: "01" },
   { href: "/trips", label: "여행", mark: "02" },
-  { href: "/map", label: "나의 지도", mark: "03" },
+  { href: "/map", label: "지도", mark: "03" },
 ];
 
 export function Navigation() {
@@ -15,7 +15,7 @@ export function Navigation() {
   return (
     <nav aria-label="주 메뉴" className="navigation">
       {destinations.map(({ href, label, mark }) => (
-        <Link key={href} href={href} aria-current={pathname === href ? "page" : undefined}>
+        <Link key={href} href={href} aria-current={pathname === href || (href === "/" && pathname.startsWith("/diary/")) ? "page" : undefined}>
           <span aria-hidden="true" className="nav-mark">{mark}</span>
           {label}
         </Link>

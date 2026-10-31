@@ -39,7 +39,7 @@ after(async () => {
 });
 
 test("all three pages render Korean navigation and an honest setup state", async () => {
-  for (const [path, title] of [["/", "나의 다이어리"], ["/trips", "나의 여행"], ["/map", "나의 지도"]]) {
+  for (const [path, title] of [["/", "다이어리"], ["/trips", "여행"], ["/map", "지도"]]) {
     const response = await fetch(`${origin}${path}`);
     assert.equal(response.status, 200);
     const html = await response.text();
@@ -71,4 +71,30 @@ test("manifest and every install icon are served with their expected type", asyn
 
 test("unknown routes return 404", async () => {
   assert.equal((await fetch(`${origin}/missing-page`)).status, 404);
+});
+
+test("week links keep all seven days across a month boundary and handle empty weeks", async () => {
+  const html = await (await fetch(`${origin}/?week=2026-11-01`)).text();
+  assert.equal((html.match(/class="week-day"/g) ?? []).length, 7);
+  assert.match(html, /href="\/diary\/2026-10-26"/);
+  assert.match(html, /href="\/diary\/2026-11-01"/);
+  assert.match(html, /\+5개/);
+  const empty = await (await fetch(`${origin}/?week=2026-11-02`)).text();
+  assert.match(empty, /비어 있는 한 주/);
+  const invalid = await (await fetch(`${origin}/?week=2026-02-30`)).text();
+  assert.match(invalid, /href="\/diary\/2026-10-26"/);
+});
+
+test("daily page exposes every overflow visit, full place names, diary and return week", async () => {
+  const response = await fetch(`${origin}/diary/2026-10-26`);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /숙소 앞 작은 공원/);
+  assert.match(html, /새로운 동네에서 시작한 한 주/);
+  assert.match(html, /href="\/\?week=2026-10-26"/);
+  const long = await (await fetch(`${origin}/diary/2026-10-29`)).text();
+  assert.match(long, /아주 긴 이름을 가진 골목 안의 작은 여행 기념품 가게/);
+  const diaryOnly = await (await fetch(`${origin}/diary/2026-10-28`)).text();
+  assert.match(diaryOnly, /오늘은 숙소에서 쉬었다/);
+  for (const date of ["2026-02-30", "not-a-date"]) assert.equal((await fetch(`${origin}/diary/${date}`)).status, 404);
 });
