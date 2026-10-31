@@ -38,7 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </svg>
               <span>triplog</span>
             </Link>
-            <span className="text-sm text-muted">나의 여행 수첩</span>
+            <span className="text-sm text-muted">여행 수첩</span>
           </header>
           <Navigation />
           <main id="main-content" tabIndex={-1}>{children}</main>

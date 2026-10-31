@@ -12,7 +12,7 @@ export default async function DiaryPage({ searchParams }: { searchParams: Promis
 
   return (
     <section className="weekly-diary" aria-labelledby="diary-title">
-      <div className="week-heading"><h1 id="diary-title">나의 다이어리 <span>주간</span></h1><Link href="/">샘플 주로</Link></div>
+      <div className="week-heading"><h1 id="diary-title">다이어리 <span>주간</span></h1><Link href="/">샘플 주로</Link></div>
       <nav className="week-toolbar" aria-label="주 이동">
         {previous ? <Link href={`/?week=${previous}`} aria-label="이전 주">←</Link> : <span />}
         <h2>{formatDate(start, { year: "numeric", month: "numeric", day: "numeric" })} — {formatDate(dates[6], { month: "numeric", day: "numeric" })}</h2>

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const destinations = [
   { href: "/", label: "다이어리", mark: "01" },
   { href: "/trips", label: "여행", mark: "02" },
-  { href: "/map", label: "나의 지도", mark: "03" },
+  { href: "/map", label: "지도", mark: "03" },
 ];
 
 export function Navigation() {

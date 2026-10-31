@@ -39,7 +39,7 @@ after(async () => {
 });
 
 test("all three pages render Korean navigation and an honest setup state", async () => {
-  for (const [path, title] of [["/", "나의 다이어리"], ["/trips", "나의 여행"], ["/map", "나의 지도"]]) {
+  for (const [path, title] of [["/", "다이어리"], ["/trips", "여행"], ["/map", "지도"]]) {
     const response = await fetch(`${origin}${path}`);
     assert.equal(response.status, 200);
     const html = await response.text();
