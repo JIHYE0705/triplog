@@ -42,7 +42,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </header>
           <Navigation />
           <main id="main-content" tabIndex={-1}>{children}</main>
-          <footer className="app-footer">개발 중인 화면입니다. 아직 기록을 저장할 수 없어요.</footer>
+          <footer className="app-footer">가상 기록으로 개발 중입니다. 실제 기록의 서버 저장은 아직 지원하지 않아요.</footer>
         </div>
       </body>
     </html>
