@@ -4,9 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { formatDate, visibleVisitCount } from "@/lib/calendar";
-import type { DemoEntry } from "@/lib/demo-diary";
+import { useDemoDiary } from "@/components/use-demo-diary";
 
-export function WeeklyDiary({ dates, entries }: { dates: string[]; entries: Record<string, DemoEntry> }) {
+export function WeeklyDiary({ dates }: { dates: string[] }) {
+  const { entries, error } = useDemoDiary();
   const board = useRef<HTMLDivElement>(null);
   const [capacity, setCapacity] = useState(0);
 
@@ -28,14 +29,16 @@ export function WeeklyDiary({ dates, entries }: { dates: string[]; entries: Reco
     observer.observe(heading);
     observer.observe(tail);
     return () => observer.disconnect();
-  }, []);
+  }, [error]);
 
-  const total = dates.reduce((count, date) => count + (entries[date]?.visits.length ?? 0), 0);
+  const total = dates.reduce((count, date) => count + (entries?.[date]?.visits.length ?? 0), 0);
+
+  if (error) return <p className="trip-error" role="alert">{error}</p>;
 
   return (
     <div className="week-board" ref={board} aria-label="한 주 7일 전체 보기">
       {dates.map((date) => {
-        const entry = entries[date];
+        const entry = entries?.[date];
         const visits = entry?.visits ?? [];
         const shown = visits.slice(0, capacity);
         const extra = visits.length - shown.length;
@@ -43,8 +46,8 @@ export function WeeklyDiary({ dates, entries }: { dates: string[]; entries: Reco
           <Link key={date} href={`/diary/${date}`} className="week-day" aria-label={`${formatDate(date, { month: "long", day: "numeric", weekday: "long" })}, 방문 ${visits.length}개${entry?.diary ? ", 하루 일기 있음" : ""}. 일간 보기`}>
             <h2><time dateTime={date}>{formatDate(date, { day: "numeric" })}</time><span>{formatDate(date, { weekday: "short" })}</span></h2>
             <ul className="visit-previews">
-              {shown.map((visit, index) => (
-                <li key={index}>
+              {shown.map((visit) => (
+                <li key={visit.id}>
                   {visit.photo ? <Image src={visit.photo} width={26} height={26} alt="" className="visit-thumb" /> : <span className="no-photo" aria-hidden="true">·</span>}
                   <span className="visit-name">{visit.place}</span>
                   {visit.time && <time className="visit-time">{visit.time}</time>}

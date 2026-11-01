@@ -1,7 +1,8 @@
-export type Visit = { place: string; time?: string; photo?: string; note: string };
-export type DemoEntry = { visits: Visit[]; diary?: string };
+import { demoTripDates } from "./demo-trips.ts";
+import type { DiaryEntries, Visit } from "./diary.ts";
+export type { DemoEntry, Visit } from "./diary.ts";
 
-export const demoEntries: Record<string, DemoEntry> = {
+const samples: Record<string, { visits: Omit<Visit, "id">[]; diary?: string }> = {
   "2026-10-26": { visits: [
     { place: "작은 로스터리", time: "10:30", photo: "/demo/coffee.jpg", note: "창가에 앉아 여행 첫날의 계획을 정리했다." },
     { place: "강변 산책길", photo: "/demo/kyoto.jpg", note: "시간을 정하지 않고 천천히 걸었다." },
@@ -31,3 +32,9 @@ export const demoEntries: Record<string, DemoEntry> = {
     { place: "기차역", time: "12:00", note: "다음 여행을 기다리며 집으로." },
   ] },
 };
+
+export const demoEntries: DiaryEntries = Object.fromEntries(Object.entries(samples).map(([date, entry]) => [date, {
+  ...entry,
+  tripIds: Object.entries(demoTripDates).filter(([, dates]) => dates.includes(date)).map(([id]) => id),
+  visits: entry.visits.map((visit, index) => ({ ...visit, id: `sample-${date}-${index}`, tripId: "kyoto-autumn", ...(visit.time ? { timeZone: "Asia/Tokyo" } : {}) })),
+}]));

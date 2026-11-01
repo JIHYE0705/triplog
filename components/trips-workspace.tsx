@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { formatDate, isDate } from "@/lib/calendar";
-import { demoEntries } from "@/lib/demo-diary";
-import { canDeleteDemoTrip, demoTravelSegments, demoTripDates, demoTripPhotos, filterDemoTrips, outsideTrip, outsideTripCount, overlapsPeriod, tripInputError, type DemoTrip } from "@/lib/demo-trips";
+import type { DiaryEntries } from "@/lib/diary";
+import { canDeleteDemoTrip, demoTravelSegments, linkedTripDates, demoTripPhotos, filterDemoTrips, outsideTrip, outsideTripCount, overlapsPeriod, tripInputError, type DemoTrip } from "@/lib/demo-trips";
 import { useDemoTrips } from "@/components/use-demo-trips";
+import { useDemoDiary } from "@/components/use-demo-diary";
 
 type View = "list" | "detail" | "new" | "edit";
 const fullDate = (date: string) => formatDate(date, { year: "numeric", month: "2-digit", day: "2-digit" });
@@ -29,6 +30,7 @@ function PeriodFilter({ from, to, setFrom, setTo, companions, companion = "", se
 
 export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
   const { trips, error, save } = useDemoTrips();
+  const { entries, error: diaryError } = useDemoDiary();
   const router = useRouter();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -38,19 +40,19 @@ export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
   const trip = trips?.find((item) => item.id === id);
   const periodError = (from && !isDate(from)) || (to && !isDate(to)) || (from && to && to < from);
 
-  if (error) return <section className="trips-workspace"><h1>여행</h1><p role="alert">{error}</p><button className="trip-button" onClick={() => window.location.reload()}>다시 불러오기</button></section>;
+  if (error || diaryError) return <section className="trips-workspace"><h1>여행</h1><p role="alert">{error || diaryError}</p><button className="trip-button" onClick={() => window.location.reload()}>다시 불러오기</button></section>;
   if (!trips) return <section className="trips-workspace" aria-busy="true"><h1>여행</h1><p role="status">가상 여행을 불러오는 중…</p><noscript>여행 시안을 보려면 JavaScript를 켜 주세요.</noscript></section>;
   if (view !== "list" && view !== "new" && !trip) return <section className="trips-workspace"><h1>여행을 찾을 수 없어요</h1><p>삭제되었거나 이 브라우저에 없는 가상 여행입니다.</p><Link className="trip-button" href="/trips">여행 목록으로</Link></section>;
 
   function removeTrip() {
-    if (!trip || !canDeleteDemoTrip(trip.id)) return;
+    if (!trip || !entries || !canDeleteDemoTrip(trip.id, entries)) return;
     if (!window.confirm(`‘${trip.title}’ 가상 여행을 이 브라우저에서 삭제할까요? 되돌릴 수 없습니다.`)) return;
     const failure = save(trips!.filter((item) => item.id !== trip.id));
     if (failure) setActionError(failure);
     else router.push("/trips");
   }
 
-  const days = trip ? (demoTripDates[trip.id] ?? []).slice().sort() : [];
+  const days = trip ? linkedTripDates(trip.id, entries ?? {}) : [];
   const segments = trip ? demoTravelSegments.filter((segment) => segment.tripId === trip.id).sort((a, b) => a.position - b.position) : [];
   const visibleDays = days.filter((date) => overlapsPeriod(date, date, from, to));
   const visibleTrips = filterDemoTrips(trips, query, from, to, companion);
@@ -67,13 +69,13 @@ export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
     </div>
     <p className="trip-demo-notice">가상 기록 · 예시 사진 · 이 브라우저에만 저장됩니다. 실제 개인 기록은 입력하지 마세요. 서버 저장·기기 간 동기화는 아직 지원하지 않습니다.</p>
 
-    {(view === "new" || view === "edit") ? <TripForm key={trip?.id ?? "new"} trip={trip} trips={trips} save={save} /> : <>
+    {(view === "new" || view === "edit") ? <TripForm key={trip?.id ?? "new"} trip={trip} trips={trips} entries={entries ?? {}} save={save} /> : <>
       {view === "detail" && <>
         {trip!.coverPhoto && <Image className="trip-detail-photo" src={trip!.coverPhoto} width={800} height={450} sizes="(max-width: 767px) 100vw, 720px" loading="eager" alt="여행 분위기를 보여주는 예시 사진" />}
         <TripPeriod trip={trip!} />
         <p className="trip-companions">동행자{trip!.companions.length ? ` · ${trip!.companions.join(" · ")}` : " 없음"}</p>
         <div className="trip-actions"><Link className="trip-button" href={`/trips/${id}/edit`}>여행 수정</Link><Link className="trip-text-button" href={`/map?trip=${id}`}>이 여행 지도</Link></div>
-        {outsideTripCount(trip!) > 0 && <p className="trip-warning" role="status">여행 기간 밖의 기록·이동편 {outsideTripCount(trip!)}건을 보존하고 있어요. 아래에서 ‘여행 기간 밖’ 표시를 확인할 수 있습니다. 연결 정리는 기록 편집 기능에서 지원할 예정입니다.</p>}
+        {outsideTripCount(trip!, entries ?? {}) > 0 && <p className="trip-warning" role="status">여행 기간 밖의 기록·이동편 {outsideTripCount(trip!, entries ?? {})}건을 보존하고 있어요. 아래에서 ‘여행 기간 밖’ 표시를 확인할 수 있습니다. 일간의 수정에서 여행 연결을 바꿀 수 있습니다.</p>}
       </>}
       <div role="search" aria-label={view === "list" ? "여행 조회" : "여행 기록 조회"}>
         {view === "list" && <label className="trip-search-field"><span className="sr-only">여행 제목 검색</span><input type="search" placeholder="여행 제목 검색" value={query} onChange={(event) => setQuery(event.target.value)} /></label>}
@@ -90,10 +92,10 @@ export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
       </> : <>
         <section className="trip-records" aria-labelledby="trip-records-title"><h2 id="trip-records-title">날짜별 기록</h2>
           {visibleDays.length ? <ol>{visibleDays.map((date) => {
-            const entry = demoEntries[date];
+            const entry = entries?.[date];
             return <li key={date}><Link className="trip-day-link" href={`/diary/${date}`}><h3><time dateTime={date}>{fullDate(date)}</time> <span>일간 보기 →</span></h3></Link>
               {outsideTrip(trip!, date) && <p className="trip-warning">여행 기간 밖 · 기록은 유지됩니다</p>}
-              {entry?.visits.length > 0 && <p>{entry.visits.map((visit) => visit.place).join(" · ")}</p>}
+              {entry && entry.visits.filter((visit) => visit.tripId === trip!.id).length > 0 && <p>{entry.visits.filter((visit) => visit.tripId === trip!.id).map((visit) => visit.place).join(" · ")}</p>}
               {entry?.diary && <p className="trip-meta">{entry.diary}</p>}
             </li>;
           })}</ol> : <p className="trip-empty">{days.length ? "조회 기간에 연결된 기록이 없어요." : "이 여행에 연결된 기록이 없어요. 날짜가 겹치는 일기를 자동으로 연결하지 않습니다."}</p>}
@@ -108,21 +110,21 @@ export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
         </section>
       </>}
       {view === "detail" && <section className="trip-delete"><h2>여행 삭제</h2>
-        {canDeleteDemoTrip(id!) ? <><p className="trip-meta">이 브라우저의 가상 여행만 삭제합니다. 되돌릴 수 없습니다.</p><button className="trip-text-button" onClick={removeTrip}>가상 여행 삭제</button></> : <p className="trip-meta">기록과 이동편을 보존하기 위해 연결된 여행은 아직 삭제할 수 없어요.</p>}
+        {canDeleteDemoTrip(id!, entries ?? {}) ? <><p className="trip-meta">이 브라우저의 가상 여행만 삭제합니다. 되돌릴 수 없습니다.</p><button className="trip-text-button" onClick={removeTrip}>가상 여행 삭제</button></> : <p className="trip-meta">기록과 이동편을 보존하기 위해 연결된 여행은 아직 삭제할 수 없어요.</p>}
         {actionError && <p className="trip-error" role="alert">{actionError}</p>}
       </section>}
     </>}
   </section>;
 }
 
-function TripForm({ trip, trips, save }: { trip?: DemoTrip; trips: DemoTrip[]; save: (items: DemoTrip[]) => string | null }) {
+function TripForm({ trip, trips, entries, save }: { trip?: DemoTrip; trips: DemoTrip[]; entries: DiaryEntries; save: (items: DemoTrip[]) => string | null }) {
   const router = useRouter();
   const [original] = useState(() => JSON.stringify(trip));
   const [draft, setDraft] = useState<DemoTrip>(() => trip ?? { id: "", title: "", startsOn: "", endsOn: "", companions: [], coverPhoto: null });
   const [error, setError] = useState<string | null>(null);
   const [confirmedOutside, setConfirmedOutside] = useState(false);
   const [saving, setSaving] = useState(false);
-  const outside = isDate(draft.startsOn) && isDate(draft.endsOn) && draft.endsOn >= draft.startsOn ? outsideTripCount(draft) : 0;
+  const outside = isDate(draft.startsOn) && isDate(draft.endsOn) && draft.endsOn >= draft.startsOn ? outsideTripCount(draft, entries) : 0;
 
   function update(values: Partial<DemoTrip>) {
     setDraft({ ...draft, ...values });
