@@ -50,6 +50,8 @@ erDiagram
 
 ## 인증 보류 중 접근 정책
 
+로그인·계정 작업은 2026-11-01 사용자 지시에 따라 다른 기능 개발 이후 마지막 단계에서 진행한다. 가상 데이터·전용 개발 DB 롤백 테스트로 후속 기능을 검증하고, 실제 개인 기록·사진의 앱 연결과 공개 운영 전에 인증·권한 검증을 완료한다.
+
 모든 기록 테이블에 RLS를 켜고 `PUBLIC`·`anon`·`authenticated`의 테이블 권한을 회수한다. 허용 정책은 아직 만들지 않아 로그인 유무와 관계없이 앱에서 읽거나 쓸 수 없다. 임시 공개 저장·service_role 우회 API는 추가하지 않는다. [공식 RLS 기준](https://supabase.com/docs/guides/database/postgres/row-level-security)을 따른다.
 
 `private.is_known_time_zone(text)`는 시스템 시간대 목록을 확인하는 `SECURITY INVOKER` 검사 함수다. 앱 역할 실행 권한도 회수한다. 실제 저장을 연결할 때는 이 함수의 필요한 권한, 서버 인증, 소유권 RLS 및 비공개 사진 검증을 함께 구성해야 한다. 이번 역할 차단 검사는 향후 소유자별 RLS 검증을 대신하지 않는다.
