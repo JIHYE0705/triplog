@@ -1,4 +1,5 @@
 import { isDate } from "./calendar.ts";
+import type { DiaryEntries } from "./diary.ts";
 
 export type DemoTrip = {
   id: string;
@@ -68,13 +69,17 @@ export function outsideTrip(trip: Pick<DemoTrip, "startsOn" | "endsOn">, date: s
   return date < trip.startsOn || date > trip.endsOn;
 }
 
-export function outsideTripCount(trip: DemoTrip): number {
-  const days = (demoTripDates[trip.id] ?? []).filter((date) => outsideTrip(trip, date)).length;
+export function linkedTripDates(id: string, entries: DiaryEntries): string[] {
+  return Object.keys(entries).filter((date) => entries[date].tripIds.includes(id)).sort();
+}
+
+export function outsideTripCount(trip: DemoTrip, entries: DiaryEntries): number {
+  const days = linkedTripDates(trip.id, entries).filter((date) => outsideTrip(trip, date)).length;
   const segments = demoTravelSegments.filter((segment) => segment.tripId === trip.id &&
     (outsideTrip(trip, segment.departureLocal.slice(0, 10)) || outsideTrip(trip, segment.arrivalLocal.slice(0, 10)))).length;
   return days + segments;
 }
 
-export function canDeleteDemoTrip(id: string): boolean {
-  return !(demoTripDates[id]?.length || demoTravelSegments.some((segment) => segment.tripId === id));
+export function canDeleteDemoTrip(id: string, entries: DiaryEntries): boolean {
+  return !(linkedTripDates(id, entries).length || demoTravelSegments.some((segment) => segment.tripId === id));
 }

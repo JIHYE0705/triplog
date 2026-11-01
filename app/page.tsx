@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { WeeklyDiary } from "@/components/weekly-diary";
 import { demoDate, formatDate, shiftDate, weekDates } from "@/lib/calendar";
-import { demoEntries } from "@/lib/demo-diary";
 
 export default async function DiaryPage({ searchParams }: { searchParams: Promise<{ week?: string | string[] }> }) {
   const { week } = await searchParams;
@@ -18,8 +17,8 @@ export default async function DiaryPage({ searchParams }: { searchParams: Promis
         <h2>{formatDate(start, { year: "numeric", month: "numeric", day: "numeric" })} — {formatDate(dates[6], { month: "numeric", day: "numeric" })}</h2>
         {next ? <Link href={`/?week=${next}`} aria-label="다음 주">→</Link> : <span />}
       </nav>
-      <p className="demo-notice">가상 기록 · 예시 사진 · 저장 기능 없음</p>
-      <WeeklyDiary dates={dates} entries={demoEntries} />
+      <p className="demo-notice">가상 기록 · 예시 사진 · 일간에서 수정 · 이 브라우저에만 저장</p>
+      <WeeklyDiary dates={dates} />
     </section>
   );
 }
