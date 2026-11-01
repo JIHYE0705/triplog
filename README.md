@@ -54,7 +54,7 @@
 
 ## 현재 구현 상태
 
-**조회용 샘플 앱입니다.** 실제 여행 기록을 작성·저장하는 용도로 사용할 수 없습니다. Supabase 연결만 구성하며 로그인·계정 관리는 후속 작업으로 미뤘습니다.
+**조회용 샘플 앱입니다.** 실제 여행 기록을 작성·저장하는 용도로 사용할 수 없습니다. Supabase 연결·데이터 모델을 구성하며 로그인·계정 관리는 마지막 기능 단계로 미뤘습니다.
 
 | 구분 | 상태 |
 | --- | --- |
@@ -67,7 +67,7 @@
 | Supabase | 서울 전용 개발 프로젝트·서버 클라이언트·읽기 전용 연결 검사 구성 |
 | 데이터 모델 | 여행·하루 일기·장소·방문·동행자·이동편·사진 메타데이터 관계 구성. 앱 접근은 차단 |
 | 실제 저장·사진·기기 간 동기화 | 개발 예정 |
-| 로그인·계정 관리 | 후속 작업으로 보류 |
+| 로그인·계정 관리 | 다른 기능 개발 이후 마지막 단계에서 구현 |
 | 배포 | 운영 환경 검증 전 |
 
 첫 화면은 2026년 10월 26일~11월 1일의 가상 기록입니다. 사진이 없는 날·긴 장소명·많은 방문도 포함하며 날짜를 누르면 일간으로 이동합니다. 예시 사진의 출처는 [샘플 사진 안내](./public/demo/README.md)를 따릅니다.
@@ -80,14 +80,17 @@
 
 | 영역 | 관련 이슈 |
 | --- | --- |
-| 운영 정책·인증·데이터 기반 | [#1](https://github.com/JIHYE0705/triplog/issues/1) · [#2](https://github.com/JIHYE0705/triplog/issues/2) |
+| 운영 정책·데이터 기반 | [#1](https://github.com/JIHYE0705/triplog/issues/1) · [#2](https://github.com/JIHYE0705/triplog/issues/2)의 기반 부분 |
 | 여행·방문·일기·월간 연동 | [#4](https://github.com/JIHYE0705/triplog/issues/4) · [#5](https://github.com/JIHYE0705/triplog/issues/5) · [#6](https://github.com/JIHYE0705/triplog/issues/6) |
 | 사진·지도 | [#7](https://github.com/JIHYE0705/triplog/issues/7) · [#8](https://github.com/JIHYE0705/triplog/issues/8) |
 | 자동 저장·초안·복구·내보내기 | [#9](https://github.com/JIHYE0705/triplog/issues/9) · [#10](https://github.com/JIHYE0705/triplog/issues/10) |
 | 배포·운영 검증 | [#11](https://github.com/JIHYE0705/triplog/issues/11) |
 | 차기 주간 배치 비교·이동편 | [#22](https://github.com/JIHYE0705/triplog/issues/22) · [#23](https://github.com/JIHYE0705/triplog/issues/23) |
+| 마지막 기능: 로그인·계정·권한 검증 | [#2](https://github.com/JIHYE0705/triplog/issues/2)의 인증 부분 |
 
 완료·진행 상태와 선행 작업은 [진행표 #12](https://github.com/JIHYE0705/triplog/issues/12)에서 관리합니다. 실제 기록과 사진은 비공개 서버 저장을 기본으로 하고, 자동 저장 실패 안내·초안 복구·사진을 포함한 내보내기와 실제 복원을 갖출 예정입니다.
+
+로그인·계정 작업 전에는 가상 데이터와 전용 개발 DB 테스트로 기능을 개발·검증합니다. 실제 개인 기록·사진의 앱 연결과 공개 운영은 마지막 인증·권한 검증을 마친 뒤 진행합니다.
 
 1차는 온라인 사용을 기본으로 합니다. 네이티브 앱·App Store 배포·실시간 위치 추적·완전한 오프라인 사용·백그라운드 사진 업로드는 포함하지 않습니다. 공유와 공동 기록은 후속 검토, 기존 트리플 기록 이관은 결정 전입니다.
 

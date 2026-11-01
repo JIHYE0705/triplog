@@ -27,6 +27,8 @@ npm run check:supabase
 
 ## 보류한 인증 작업
 
+로그인·허용 계정·계정 관리는 다른 기능 개발 이후 마지막 단계로 옮겼다. 인증 부분 때문에 여행·일기·사진·지도·복구 기능의 개발을 중단하지 않으며 가상 데이터·전용 개발 DB 테스트로 검증한다. 실제 개인 기록·사진의 앱 연결과 공개 운영은 마지막 인증·권한 검증을 마친 뒤 진행한다.
+
 기존 `feat/2-supabase-auth`의 미커밋 변경분은 Git stash `deferred: Triplog Google auth before connection-only scope 2026-11-01`에 보존했다. 이 stash는 로컬 복구용이며 원격 저장소에는 올라가지 않는다. 재개할 때 최신 main과 비교해 필요한 변경만 복원한다.
 
 이전 인증 작업의 로컬 파일은 `20261031073934_app_access.sql`이지만 실제 원격 적용 버전은 `20261031074132_app_access.sql`이다. 기록 모델 작업에서 원격 이력을 fetch해 후자를 저장소에 복원했다. `private.allowed_accounts`와 `public.has_app_access()`는 앱에서 사용하지 않으며 삭제하거나 접근 권한을 넓히지 않는다. 신규 환경에서는 저장소의 마이그레이션 순서를 따른다. 원래 권한 테스트는 위 stash에 남겨 두며 인증 재개 시 별도로 검토한다.
