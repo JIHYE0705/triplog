@@ -13,12 +13,15 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
+    "check:supabase": "node --conditions=react-server --env-file-if-exists=.env.local scripts/check-supabase.mjs",
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
     "next": "16.4.3",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
