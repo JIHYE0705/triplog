@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "check:supabase": "node --conditions=react-server --env-file-if-exists=.env.local scripts/check-supabase.mjs",
+    "test:db": "npx supabase@2.122.0 db query --linked --project-ref htnaiayvvovgkcnsipzh --file supabase/tests/record_data_model.sql",
     "test": "npm run build && node --test tests/*.test.mjs"
   },
   "dependencies": {
