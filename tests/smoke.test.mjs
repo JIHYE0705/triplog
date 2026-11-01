@@ -45,13 +45,27 @@ test("all three pages render Korean navigation and an honest setup state", async
     const html = await response.text();
     assert.match(html, /lang="ko"/);
     assert.ok(html.includes(title));
-    assert.match(html, /아직 기록을 저장할 수 없어요/);
+    assert.match(html, /실제 기록의 서버 저장은 아직 지원하지 않아요/);
     const current = html.match(/<a\b[^>]*aria-current="page"[^>]*>/g);
     assert.equal(current?.length, 1);
     assert.ok(current[0].includes(`href="${path}"`));
     assert.match(html, /rel="manifest"/);
     assert.match(html, /viewport-fit=cover/);
   }
+});
+
+test("trip routes keep the trip menu active and expose a hydration loading state", async () => {
+  for (const path of ["/trips/new", "/trips/kyoto-autumn", "/trips/kyoto-autumn/edit", "/trips/unknown-trip"]) {
+    const response = await fetch(`${origin}${path}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /가상 여행을 불러오는 중/);
+    const current = html.match(/<a\b[^>]*aria-current="page"[^>]*>/g);
+    assert.equal(current?.length, 1);
+    assert.ok(current[0].includes('href="/trips"'));
+  }
+  const map = await (await fetch(`${origin}/map?trip=kyoto-autumn`)).text();
+  assert.match(map, /가상 여행을 불러오는 중/);
 });
 
 test("manifest and every install icon are served with their expected type", async () => {

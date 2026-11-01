@@ -109,6 +109,82 @@ h1 { margin: 8px 0 16px; font-size: clamp(28px, 5vw, 38px); line-height: 1.4; fo
 .daily-visit-title time { flex-shrink: 0; font-size: 14px; color: var(--color-muted); }
 .daily-photo { width: min(100%, 640px); height: auto; max-height: 420px; object-fit: cover; margin-bottom: 12px; }
 
+/* #4·#25: 승인된 새 토큰은 여행 화면에 한정해 적용한다. */
+.app-shell:has(.trips-workspace) {
+  --color-paper: #FFFFFF;
+  --color-cream: #E9DDC7;
+  --color-soft: #F8F3E9;
+  --color-chestnut: #79634F;
+  --color-ink: #302B27;
+  --color-muted: #6F6A63;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+body:has(.trips-workspace) { background: #FFFFFF; }
+.app-shell:has(.trips-workspace) main { padding-block: 24px 40px; }
+.trips-workspace { max-width: 720px; margin-inline: auto; overflow-wrap: anywhere; }
+.trip-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.trip-heading h1 { font-size: 28px; font-weight: 500; min-width: 0; margin: 8px 0 16px; }
+.trip-demo-notice { font-size: 14px; line-height: 1.6; color: var(--color-muted); margin-bottom: 24px; }
+.trip-button, .trip-text-button, .trip-back { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; font-size: 16px; line-height: 1.6; cursor: pointer; }
+.trip-button { background: var(--color-cream); color: var(--color-ink); border: 1px solid var(--color-chestnut); border-radius: 4px; padding: 8px 16px; flex-shrink: 0; }
+.trip-text-button, .trip-back { color: var(--color-chestnut); text-decoration: underline; text-underline-offset: 4px; padding: 8px; }
+.trip-back { padding-left: 0; margin-bottom: 8px; }
+.trip-button:hover { background: var(--color-soft); }
+.trip-button:active { background: var(--color-cream); }
+.trip-text-button:hover, .trip-day-link:hover { background: var(--color-soft); }
+.trips-workspace :is(button, input, select):focus-visible { outline: 2px solid var(--color-chestnut); outline-offset: 3px; }
+.trips-workspace button:disabled { cursor: default; opacity: .65; }
+.trips-workspace label { display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 16px; }
+.trips-workspace input:not([type="radio"], [type="checkbox"]), .trips-workspace select { display: block; width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--color-chestnut); border-radius: 4px; background: white; color: var(--color-ink); font: inherit; line-height: 1.6; }
+.trips-workspace input:is([type="radio"], [type="checkbox"]) { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--color-chestnut); }
+.trip-search-field { margin-top: 24px; }
+.trip-period-panel { margin: 8px 0 16px; border-bottom: 1px solid #E8E3DB; }
+.trip-period-panel summary { min-height: 44px; padding-block: 8px; cursor: pointer; font-size: 14px; color: var(--color-chestnut); }
+.trip-period-panel summary:focus-visible { outline: 2px solid var(--color-chestnut); outline-offset: 3px; }
+.trip-period-filter { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; padding-block: 8px 16px; }
+.trip-period-filter legend { font-size: 16px; padding-right: 8px; }
+.trip-period-filter label { flex: 1 1 136px; font-size: 14px; }
+.trip-period-filter .trip-companion-filter { flex-basis: 100%; }
+.trip-list { margin-top: 8px; }
+.trip-list > li { border-bottom: 1px solid #E8E3DB; }
+.trip-row { display: flex; align-items: center; gap: 16px; min-height: 96px; padding-block: 24px; }
+.trip-row:hover { background: var(--color-soft); }
+.trip-thumbnail { width: 128px; height: 96px; object-fit: cover; flex-shrink: 0; border-radius: 4px; }
+.trip-row-copy { flex: 1; min-width: 0; }
+.trip-row h2 { font-size: 18px; line-height: 1.5; font-weight: 500; margin-bottom: 8px; }
+.trip-meta, .trip-companions { font-size: 14px; line-height: 1.6; color: var(--color-muted); }
+.trip-companions { margin-top: 8px; }
+.trip-empty { padding-block: 24px; }
+.trip-detail-photo { width: 100%; height: auto; max-height: 380px; aspect-ratio: 16 / 9; object-fit: cover; margin-bottom: 24px; }
+.trip-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 24px; }
+.trip-records, .trip-delete { margin-top: 32px; padding-top: 24px; border-top: 1px solid #E8E3DB; }
+.trip-records h2, .trip-delete h2 { font-size: 20px; font-weight: 500; margin-bottom: 16px; }
+.trip-records li { padding-block: 20px; border-bottom: 1px solid #E8E3DB; }
+.trip-records h3 { font-size: 16px; font-weight: 500; }
+.trip-records li p { margin-top: 8px; }
+.trip-day-link { display: block; min-height: 44px; padding-block: 8px; }
+.trip-day-link span { font-size: 14px; font-weight: 400; color: var(--color-chestnut); }
+.trip-warning { color: #805B16; margin-block: 16px; font-size: 14px; }
+.trip-error { color: #A33A32; margin-block: 16px; }
+.trip-form { display: flex; flex-direction: column; gap: 24px; }
+.trip-form fieldset { min-width: 0; border-top: 1px solid #E8E3DB; padding-top: 16px; }
+.trip-form fieldset legend { padding-right: 8px; }
+.trip-form-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.trip-companion-field { display: flex; align-items: end; gap: 8px; margin-top: 16px; }
+.trip-companion-field label { flex: 1; }
+.trip-photo-choices { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; margin-top: 16px; }
+.trip-photo-choices label { align-items: flex-start; cursor: pointer; min-height: 44px; padding: 8px; border: 1px solid transparent; }
+.trip-photo-choices label:has(:checked) { border-color: var(--color-chestnut); border-radius: 4px; }
+.trip-photo-choices img { width: 128px; height: 96px; object-fit: cover; }
+.trip-form .trip-check { flex-direction: row; align-items: center; min-height: 44px; }
+.trip-map-notice { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--color-soft); overflow-wrap: anywhere; }
+@media (max-width: 359px) {
+  .trip-row { gap: 12px; align-items: flex-start; }
+  .trip-thumbnail { width: 104px; height: 78px; }
+  .trip-form-dates { grid-template-columns: 1fr; }
+}
+
 @media (min-width: 768px) {
   .app-shell:has(.weekly-diary) { width: min(100%, 1200px); padding: 24px 48px; }
   .app-shell:has(.weekly-diary) main { padding-block: 12px; }
