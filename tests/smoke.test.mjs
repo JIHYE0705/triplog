@@ -106,9 +106,28 @@ test("daily page exposes every overflow visit, full place names, diary and retur
   assert.match(html, /숙소 앞 작은 공원/);
   assert.match(html, /새로운 동네에서 시작한 한 주/);
   assert.match(html, /href="\/\?week=2026-10-26"/);
+  assert.ok(html.includes('href="/?view=month&amp;date=2026-10-26"'));
   const long = await (await fetch(`${origin}/diary/2026-10-29`)).text();
   assert.match(long, /아주 긴 이름을 가진 골목 안의 작은 여행 기념품 가게/);
   const diaryOnly = await (await fetch(`${origin}/diary/2026-10-28`)).text();
   assert.match(diaryOnly, /오늘은 숙소에서 쉬었다/);
   for (const date of ["2026-02-30", "not-a-date"]) assert.equal((await fetch(`${origin}/diary/${date}`)).status, 404);
+});
+
+test("monthly routes render complete calendars and wait for browser records without inventing data", async () => {
+  for (const [date, count] of [["2026-10-26", 35], ["2026-11-01", 42], ["2024-02-29", 35]]) {
+    const response = await fetch(`${origin}/?view=month&date=${date}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.equal((html.match(/class="month-date(?: |")/g) ?? []).length, count);
+    assert.match(html, /가상 여행과 기록을 불러오는 중/);
+    assert.ok(html.includes(`href="/diary/${date}"`));
+    assert.ok(html.includes('aria-current="date"'));
+    assert.ok(!html.includes('class="month-band"'), "server must wait for local trip data");
+  }
+  for (const query of ["date=not-a-date", "date=2026-02-30", "date=2026-11-01&date=2024-02-29"]) {
+    const html = await (await fetch(`${origin}/?view=month&${query}`)).text();
+    assert.ok(html.includes('href="/diary/2026-10-26"'));
+  }
+  for (const date of ["0000-01-01", "9999-12-31"]) assert.equal((await fetch(`${origin}/?view=month&date=${date}`)).status, 200);
 });

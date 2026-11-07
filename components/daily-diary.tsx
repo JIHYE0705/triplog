@@ -73,7 +73,7 @@ export function DailyDiary({ date }: { date: string }) {
   }
 
   return <section className="daily-diary" aria-busy={!ready}>
-    <Link href={`/?week=${weekDates(date)[0]}`} className="back-to-week">← 이 날짜의 주간으로</Link>
+    <nav className="daily-view-nav" aria-label="다이어리 보기"><Link href={`/?view=month&date=${date}`} className="back-to-week">← 월간으로</Link><Link href={`/?week=${weekDates(date)[0]}`} className="back-to-week">이 날짜의 주간으로</Link></nav>
     <p className="page-label">DAILY · 가상 기록</p>
     <h1><time dateTime={date}>{formatDate(date, { year: "numeric", month: "long", day: "numeric", weekday: "long" })}</time></h1>
     <nav className="daily-date-nav" aria-label="날짜 이동">
