@@ -9,6 +9,7 @@ import { putVisit, reorderVisit, visitInputError, type DemoEntry, type DiaryEntr
 import { outsideTrip, type DemoTrip } from "@/lib/demo-trips";
 import { useDemoDiary } from "@/components/use-demo-diary";
 import { useDemoTrips } from "@/components/use-demo-trips";
+import { useDraftGuard } from "@/components/use-draft-guard";
 
 type Save = (next: DiaryEntries, original: DiaryEntries) => string | null;
 type Editor = "diary" | "new" | { visitId: string };
@@ -18,21 +19,6 @@ function timeZoneLabel(zone: string) {
   return zone === "Asia/Seoul" ? "서울" : zone === "Asia/Tokyo" ? "도쿄" : zone === "UTC" ? "UTC" : zone.split("/").slice(1).join(" / ").replaceAll("_", " ");
 }
 
-function useDraftGuard(dirty: boolean) {
-  useEffect(() => {
-    if (!dirty) return;
-    const unload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
-    const navigate = (event: globalThis.MouseEvent) => {
-      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
-      if (link && link.getAttribute("href")?.startsWith("#") !== true && !window.confirm("저장하지 않은 입력 내용이 있어요. 저장하지 않고 이동할까요?")) {
-        event.preventDefault(); event.stopPropagation();
-      }
-    };
-    window.addEventListener("beforeunload", unload);
-    document.addEventListener("click", navigate, true);
-    return () => { window.removeEventListener("beforeunload", unload); document.removeEventListener("click", navigate, true); };
-  }, [dirty]);
-}
 
 function CancelButton({ dirty, cancel }: { dirty: boolean; cancel: () => void }) {
   return <button type="button" className="trip-text-button" onClick={() => {

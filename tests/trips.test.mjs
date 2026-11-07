@@ -41,12 +41,12 @@ test("title, inclusive period and companion filters combine and keep source orde
 
 test("shrinking a trip counts out-of-range days and transport without altering records or photo", () => {
   const before = JSON.stringify({ demoTrips, demoTripDates, demoTravelSegments });
-  assert.equal(outsideTripCount(demoTrips[0], demoEntries), 0);
+  assert.equal(outsideTripCount(demoTrips[0], demoEntries, demoTravelSegments), 0);
   const changed = { ...demoTrips[0], startsOn: "2026-10-28", endsOn: "2026-10-29" };
-  assert.equal(outsideTripCount(changed, demoEntries), 6);
+  assert.equal(outsideTripCount(changed, demoEntries, demoTravelSegments), 6);
   assert.equal(changed.coverPhoto, demoTrips[0].coverPhoto);
   assert.equal(JSON.stringify({ demoTrips, demoTripDates, demoTravelSegments }), before);
   assert.equal(demoTripDates["new-trip"], undefined, "matching dates must not create implicit trip links");
-  assert.equal(canDeleteDemoTrip(changed.id, demoEntries), false);
-  assert.equal(canDeleteDemoTrip("new-trip", demoEntries), true);
+  assert.equal(canDeleteDemoTrip(changed.id, demoEntries, demoTravelSegments), false);
+  assert.equal(canDeleteDemoTrip("new-trip", demoEntries, demoTravelSegments), true);
 });

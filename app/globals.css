@@ -296,3 +296,15 @@ body:has(.monthly-diary) { background: #FFFFFF; }
   .app-shell:has(.monthly-diary) { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
   .month-heading { flex-wrap: wrap; }
 }
+
+/* #23: 긴 이동편 입력은 승인된 B의 별도 화면에서 다룬다. */
+.segment-editor { max-width: 680px; }
+.segment-endpoint { display: flex; flex-direction: column; gap: 16px; }
+.segment-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.segment-heading h2 { margin-bottom: 0; }
+.segment-heading h3 { min-width: 0; }
+.segment-heading .trip-text-button { flex-shrink: 0; }
+#trip-transport-title { scroll-margin-top: 24px; }
+@media (max-width: 389px) {
+  .segment-editor .trip-form-dates { grid-template-columns: 1fr; }
+}
