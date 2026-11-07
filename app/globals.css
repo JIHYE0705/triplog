@@ -305,6 +305,4 @@ body:has(.monthly-diary) { background: #FFFFFF; }
 .segment-heading h3 { min-width: 0; }
 .segment-heading .trip-text-button { flex-shrink: 0; }
 #trip-transport-title { scroll-margin-top: 24px; }
-@media (max-width: 389px) {
-  .segment-editor .trip-form-dates { grid-template-columns: 1fr; }
-}
+.segment-editor .trip-form-dates { grid-template-columns: repeat(auto-fit, minmax(min(100%, 9em), 1fr)); }
