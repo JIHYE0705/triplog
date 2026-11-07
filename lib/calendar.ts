@@ -31,3 +31,21 @@ export function visibleVisitCount(cellHeight: number, reserved = 62, rowHeight =
   // 날짜·여백·초과 표시 공간을 먼저 확보하고, 장소는 최대 세 개만 보여준다.
   return Math.max(0, Math.min(3, Math.floor((cellHeight - reserved) / rowHeight)));
 }
+
+export function shiftMonth(value: string, months: number): string | null {
+  if (!isDate(value)) return null;
+  const date = new Date(`${value.slice(0, 7)}-01T12:00:00Z`);
+  date.setUTCMonth(date.getUTCMonth() + months);
+  const result = date.toISOString().slice(0, 10);
+  return isDate(result) ? result : null;
+}
+
+export function monthWeeks(value: string): (string | null)[][] {
+  const first = `${(isDate(value) ? value : demoDate).slice(0, 7)}-01`;
+  const offset = (new Date(`${first}T12:00:00Z`).getUTCDay() + 6) % 7;
+  const next = shiftMonth(first, 1);
+  const last = next ? shiftDate(next, -1)! : `${first.slice(0, 7)}-31`;
+  const length = Math.ceil((offset + Number(last.slice(-2))) / 7) * 7;
+  return Array.from({ length: length / 7 }, (_, week) =>
+    Array.from({ length: 7 }, (_, day) => shiftDate(first, week * 7 + day - offset)));
+}
