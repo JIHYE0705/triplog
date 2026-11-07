@@ -60,8 +60,8 @@ test("daily multi-trip links drive trip details and deletion guards without infe
   assert.deepEqual(linkedTripDates("first", parsed), ["2026-11-03"]);
   assert.deepEqual(linkedTripDates("second", parsed), ["2026-11-03"]);
   assert.deepEqual(linkedTripDates("unlinked", parsed), []);
-  assert.equal(canDeleteDemoTrip("second", parsed), false);
-  assert.equal(canDeleteDemoTrip("unlinked", parsed), true);
-  assert.equal(outsideTripCount({ id: "second", startsOn: "2026-11-01", endsOn: "2026-11-02" }, parsed), 1);
+  assert.equal(canDeleteDemoTrip("second", parsed, []), false);
+  assert.equal(canDeleteDemoTrip("unlinked", parsed, []), true);
+  assert.equal(outsideTripCount({ id: "second", startsOn: "2026-11-01", endsOn: "2026-11-02" }, parsed, []), 1);
   assert.deepEqual(reorderVisit(parsed["2026-11-03"], "one", -1), parsed["2026-11-03"]);
 });

@@ -8,7 +8,11 @@ import { formatDate, isDate } from "@/lib/calendar";
 import type { DiaryEntries } from "@/lib/diary";
 import { canDeleteDemoTrip, demoTravelSegments, linkedTripDates, demoTripPhotos, filterDemoTrips, outsideTrip, outsideTripCount, overlapsPeriod, tripInputError, type DemoTrip } from "@/lib/demo-trips";
 import { useDemoTrips } from "@/components/use-demo-trips";
-import { useDemoDiary } from "@/components/use-demo-diary";
+import { useDemoDiary, demoDiaryStorageKey } from "@/components/use-demo-diary";
+import { useDemoSegments, demoSegmentsStorageKey } from "@/components/use-demo-segments";
+import { parseTravelSegments, reorderSegment, type TravelSegment } from "@/lib/travel-segments";
+import { parseDiaryEntries } from "@/lib/diary";
+import { demoEntries } from "@/lib/demo-diary";
 
 type View = "list" | "detail" | "new" | "edit";
 const fullDate = (date: string) => formatDate(date, { year: "numeric", month: "2-digit", day: "2-digit" });
@@ -31,29 +35,43 @@ function PeriodFilter({ from, to, setFrom, setTo, companions, companion = "", se
 export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
   const { trips, error, save } = useDemoTrips();
   const { entries, error: diaryError } = useDemoDiary();
+  const { segments: allSegments, error: segmentsError, save: saveSegments } = useDemoSegments();
   const router = useRouter();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [query, setQuery] = useState("");
   const [companion, setCompanion] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
+  const [segmentMessage, setSegmentMessage] = useState("");
   const trip = trips?.find((item) => item.id === id);
   const periodError = (from && !isDate(from)) || (to && !isDate(to)) || (from && to && to < from);
 
-  if (error || diaryError) return <section className="trips-workspace"><h1>여행</h1><p role="alert">{error || diaryError}</p><button className="trip-button" onClick={() => window.location.reload()}>다시 불러오기</button></section>;
-  if (!trips) return <section className="trips-workspace" aria-busy="true"><h1>여행</h1><p role="status">가상 여행을 불러오는 중…</p><noscript>여행 시안을 보려면 JavaScript를 켜 주세요.</noscript></section>;
+  if (error || diaryError || segmentsError) return <section className="trips-workspace"><h1>여행</h1><p role="alert">{error || diaryError || segmentsError}</p><button className="trip-button" onClick={() => window.location.reload()}>다시 불러오기</button></section>;
+  if (!trips || !allSegments) return <section className="trips-workspace" aria-busy="true"><h1>여행</h1><p role="status">가상 여행을 불러오는 중…</p><noscript>여행 시안을 보려면 JavaScript를 켜 주세요.</noscript></section>;
   if (view !== "list" && view !== "new" && !trip) return <section className="trips-workspace"><h1>여행을 찾을 수 없어요</h1><p>삭제되었거나 이 브라우저에 없는 가상 여행입니다.</p><Link className="trip-button" href="/trips">여행 목록으로</Link></section>;
 
   function removeTrip() {
-    if (!trip || !entries || !canDeleteDemoTrip(trip.id, entries)) return;
+    if (!trip || !entries || !canDeleteDemoTrip(trip.id, entries, allSegments ?? [])) return;
     if (!window.confirm(`‘${trip.title}’ 가상 여행을 이 브라우저에서 삭제할까요? 되돌릴 수 없습니다.`)) return;
+    try {
+      // 확인창이 열린 동안 다른 탭에서 추가한 기록·이동편도 보존한다.
+      const currentEntries = parseDiaryEntries(window.localStorage.getItem(demoDiaryStorageKey) ?? JSON.stringify(demoEntries));
+      const currentSegments = parseTravelSegments(window.localStorage.getItem(demoSegmentsStorageKey) ?? JSON.stringify(demoTravelSegments));
+      if (!canDeleteDemoTrip(trip.id, currentEntries, currentSegments)) { setActionError("이 여행에 새 기록·이동편이 연결됐어요. 삭제하지 않고 보존했습니다."); return; }
+    } catch { setActionError("기록·이동편을 확인하지 못해 여행을 삭제하지 않았어요. 브라우저 저장 설정을 확인해 주세요."); return; }
     const failure = save(trips!.filter((item) => item.id !== trip.id));
     if (failure) setActionError(failure);
     else router.push("/trips");
   }
 
   const days = trip ? linkedTripDates(trip.id, entries ?? {}) : [];
-  const segments = trip ? demoTravelSegments.filter((segment) => segment.tripId === trip.id).sort((a, b) => a.position - b.position) : [];
+  const segments = trip ? allSegments.filter((segment) => segment.tripId === trip.id) : [];
+  function changeSegments(next: TravelSegment[]) {
+    const failure = saveSegments(next, allSegments!);
+    setActionError(failure);
+    setSegmentMessage(failure ? "" : "이동편을 이 브라우저에 저장했어요.");
+    if (!failure) document.getElementById("trip-transport-title")?.focus();
+  }
   const visibleDays = days.filter((date) => overlapsPeriod(date, date, from, to));
   const visibleTrips = filterDemoTrips(trips, query, from, to, companion);
   const companions = [...new Set(trips.flatMap((item) => item.companions))].sort((a, b) => a.localeCompare(b, "ko"));
@@ -69,13 +87,13 @@ export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
     </div>
     <p className="trip-demo-notice">가상 기록 · 예시 사진 · 이 브라우저에만 저장됩니다. 실제 개인 기록은 입력하지 마세요. 서버 저장·기기 간 동기화는 아직 지원하지 않습니다.</p>
 
-    {(view === "new" || view === "edit") ? <TripForm key={trip?.id ?? "new"} trip={trip} trips={trips} entries={entries ?? {}} save={save} /> : <>
+    {(view === "new" || view === "edit") ? <TripForm key={trip?.id ?? "new"} trip={trip} trips={trips} entries={entries ?? {}} segments={allSegments} save={save} /> : <>
       {view === "detail" && <>
         {trip!.coverPhoto && <Image className="trip-detail-photo" src={trip!.coverPhoto} width={800} height={450} sizes="(max-width: 767px) 100vw, 720px" loading="eager" alt="여행 분위기를 보여주는 예시 사진" />}
         <TripPeriod trip={trip!} />
         <p className="trip-companions">동행자{trip!.companions.length ? ` · ${trip!.companions.join(" · ")}` : " 없음"}</p>
         <div className="trip-actions"><Link className="trip-button" href={`/trips/${id}/edit`}>여행 수정</Link><Link className="trip-text-button" href={`/map?trip=${id}`}>이 여행 지도</Link></div>
-        {outsideTripCount(trip!, entries ?? {}) > 0 && <p className="trip-warning" role="status">여행 기간 밖의 기록·이동편 {outsideTripCount(trip!, entries ?? {})}건을 보존하고 있어요. 아래에서 ‘여행 기간 밖’ 표시를 확인할 수 있습니다. 일간의 수정에서 여행 연결을 바꿀 수 있습니다.</p>}
+        {outsideTripCount(trip!, entries ?? {}, allSegments) > 0 && <p className="trip-warning" role="status">여행 기간 밖의 기록·이동편 {outsideTripCount(trip!, entries ?? {}, allSegments)}건을 보존하고 있어요. 아래에서 ‘여행 기간 밖’ 표시를 확인할 수 있습니다. 일간의 수정에서 여행 연결을 바꿀 수 있습니다.</p>}
       </>}
       <div role="search" aria-label={view === "list" ? "여행 조회" : "여행 기록 조회"}>
         {view === "list" && <label className="trip-search-field"><span className="sr-only">여행 제목 검색</span><input type="search" placeholder="여행 제목 검색" value={query} onChange={(event) => setQuery(event.target.value)} /></label>}
@@ -100,31 +118,34 @@ export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
             </li>;
           })}</ol> : <p className="trip-empty">{days.length ? "조회 기간에 연결된 기록이 없어요." : "이 여행에 연결된 기록이 없어요. 날짜가 겹치는 일기를 자동으로 연결하지 않습니다."}</p>}
         </section>
-        <section className="trip-records" aria-labelledby="trip-transport-title"><h2 id="trip-transport-title">이동편</h2>
-          <p className="trip-meta">이동편 입력·수정·삭제는 아직 준비 중입니다. 아래 시각은 각 장소의 현지 시각입니다.</p>
-          {visibleSegments.length ? <ol>{visibleSegments.map((segment) => <li key={segment.position}>
-            <h3>{segment.mode} · {segment.service}</h3><p>{segment.departure} → {segment.arrival}</p>
+        <section className="trip-records" aria-labelledby="trip-transport-title"><div className="segment-heading"><h2 id="trip-transport-title" tabIndex={-1}>이동편</h2><Link className="trip-text-button" href={`/trips/${id}/segments/new`}>＋ 이동편 추가</Link></div>
+          <p className="trip-meta">직접 입력한 가상 기록입니다. 아래 시각은 각 장소의 현지 시각입니다.</p>
+          {visibleSegments.length ? <ol>{visibleSegments.map((segment) => <li key={segment.id}>
+            <div className="segment-heading"><h3>{segment.mode}{segment.service && ` · ${segment.service}`}</h3><Link className="trip-text-button" href={`/trips/${id}/segments/${segment.id}/edit`}>수정<span className="sr-only"> · {segment.departure} → {segment.arrival}</span></Link></div>{segment.operator && <p className="trip-meta">{segment.operator}</p>}<p>{segment.departure} → {segment.arrival}</p>
             <p className="trip-meta">출발 <time dateTime={segment.departureLocal}>{segment.departureLocal.replace("T", " ")}</time> ({segment.departureZone})<br />도착 <time dateTime={segment.arrivalLocal}>{segment.arrivalLocal.replace("T", " ")}</time> ({segment.arrivalZone})</p>
             {(outsideTrip(trip!, segment.departureLocal.slice(0, 10)) || outsideTrip(trip!, segment.arrivalLocal.slice(0, 10))) && <p className="trip-warning">여행 기간 밖 · 이동편은 유지됩니다</p>}
+          <p className="trip-meta">실제 시각 · UTC {segment.departureUtc.slice(0, 16).replace("T", " ")} → {segment.arrivalUtc.slice(0, 16).replace("T", " ")}</p>
+            <div className="trip-actions"><button type="button" className="trip-text-button" disabled={segments.indexOf(segment) === 0} aria-label={`${segment.departure} → ${segment.arrival} 위로 이동`} onClick={() => changeSegments(reorderSegment(allSegments, segment.id, -1))}>↑ 위로</button><button type="button" className="trip-text-button" disabled={segments.indexOf(segment) === segments.length - 1} aria-label={`${segment.departure} → ${segment.arrival} 아래로 이동`} onClick={() => changeSegments(reorderSegment(allSegments, segment.id, 1))}>아래로 ↓</button><button type="button" className="trip-text-button" aria-label={`${segment.departure} → ${segment.arrival} 이동편 삭제`} onClick={() => { if (window.confirm(`‘${segment.departure} → ${segment.arrival}’ 가상 이동편을 삭제할까요? 되돌릴 수 없습니다. 여행과 일기는 유지됩니다.`)) changeSegments(allSegments.filter((item) => item.id !== segment.id)); }}>삭제</button></div>
           </li>)}</ol> : <p className="trip-empty">{segments.length ? "조회 기간에 해당하는 이동편이 없어요." : "연결된 이동편이 없어요."}</p>}
+          <p role="status" className="trip-meta">{segmentMessage}</p>
         </section>
       </>}
       {view === "detail" && <section className="trip-delete"><h2>여행 삭제</h2>
-        {canDeleteDemoTrip(id!, entries ?? {}) ? <><p className="trip-meta">이 브라우저의 가상 여행만 삭제합니다. 되돌릴 수 없습니다.</p><button className="trip-text-button" onClick={removeTrip}>가상 여행 삭제</button></> : <p className="trip-meta">기록과 이동편을 보존하기 위해 연결된 여행은 아직 삭제할 수 없어요.</p>}
+        {canDeleteDemoTrip(id!, entries ?? {}, allSegments) ? <><p className="trip-meta">이 브라우저의 가상 여행만 삭제합니다. 되돌릴 수 없습니다.</p><button className="trip-text-button" onClick={removeTrip}>가상 여행 삭제</button></> : <p className="trip-meta">기록과 이동편을 보존하기 위해 연결된 여행은 아직 삭제할 수 없어요.</p>}
         {actionError && <p className="trip-error" role="alert">{actionError}</p>}
       </section>}
     </>}
   </section>;
 }
 
-function TripForm({ trip, trips, entries, save }: { trip?: DemoTrip; trips: DemoTrip[]; entries: DiaryEntries; save: (items: DemoTrip[]) => string | null }) {
+function TripForm({ trip, trips, entries, segments, save }: { trip?: DemoTrip; trips: DemoTrip[]; entries: DiaryEntries; segments: TravelSegment[]; save: (items: DemoTrip[]) => string | null }) {
   const router = useRouter();
   const [original] = useState(() => JSON.stringify(trip));
   const [draft, setDraft] = useState<DemoTrip>(() => trip ?? { id: "", title: "", startsOn: "", endsOn: "", companions: [], coverPhoto: null });
   const [error, setError] = useState<string | null>(null);
   const [confirmedOutside, setConfirmedOutside] = useState(false);
   const [saving, setSaving] = useState(false);
-  const outside = isDate(draft.startsOn) && isDate(draft.endsOn) && draft.endsOn >= draft.startsOn ? outsideTripCount(draft, entries) : 0;
+  const outside = isDate(draft.startsOn) && isDate(draft.endsOn) && draft.endsOn >= draft.startsOn ? outsideTripCount(draft, entries, segments) : 0;
 
   function update(values: Partial<DemoTrip>) {
     setDraft({ ...draft, ...values });

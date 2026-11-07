@@ -131,3 +131,16 @@ test("monthly routes render complete calendars and wait for browser records with
   }
   for (const date of ["0000-01-01", "9999-12-31"]) assert.equal((await fetch(`${origin}/?view=month&date=${date}`)).status, 200);
 });
+
+test("segment editor routes keep the trip menu active and wait for local records", async () => {
+  for (const path of ["/trips/kyoto-autumn/segments/new", "/trips/kyoto-autumn/segments/sample-flight/edit", "/trips/unknown-trip/segments/missing/edit"]) {
+    const response = await fetch(`${origin}${path}`);
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    assert.match(html, /가상 여행과 이동편을 불러오는 중/);
+    const current = html.match(/<a\b[^>]*aria-current="page"[^>]*>/g);
+    assert.equal(current?.length, 1);
+    assert.ok(current[0].includes('href="/trips"'));
+    assert.ok(!html.includes('class="trip-form"'), "must not edit before loading local records");
+  }
+});

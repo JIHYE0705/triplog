@@ -1,5 +1,6 @@
 import { isDate } from "./calendar.ts";
 import type { DiaryEntries } from "./diary.ts";
+import type { TravelSegment } from "./travel-segments.ts";
 
 export type DemoTrip = {
   id: string;
@@ -25,9 +26,9 @@ export const demoTripDates: Record<string, string[]> = {
   "kyoto-autumn": ["2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-31", "2026-11-01"],
 };
 
-export const demoTravelSegments = [
-  { tripId: "kyoto-autumn", mode: "항공", service: "예시 항공편", departure: "인천", arrival: "간사이", departureLocal: "2026-10-26T08:00", arrivalLocal: "2026-10-26T10:00", departureZone: "Asia/Seoul", arrivalZone: "Asia/Tokyo", position: 0 },
-  { tripId: "kyoto-autumn", mode: "철도", service: "예시 열차", departure: "교토역", arrival: "간사이공항역", departureLocal: "2026-11-01T12:00", arrivalLocal: "2026-11-01T13:20", departureZone: "Asia/Tokyo", arrivalZone: "Asia/Tokyo", position: 1 },
+export const demoTravelSegments: TravelSegment[] = [
+  { id: "sample-flight", operator: "", tripId: "kyoto-autumn", mode: "항공", service: "예시 항공편", departure: "인천", arrival: "간사이", departureLocal: "2026-10-26T08:00", arrivalLocal: "2026-10-26T10:00", departureZone: "Asia/Seoul", arrivalZone: "Asia/Tokyo", departureUtc: "2026-10-25T23:00:00.000Z", arrivalUtc: "2026-10-26T01:00:00.000Z" },
+  { id: "sample-train", operator: "", tripId: "kyoto-autumn", mode: "철도", service: "예시 열차", departure: "교토역", arrival: "간사이공항역", departureLocal: "2026-11-01T12:00", arrivalLocal: "2026-11-01T13:20", departureZone: "Asia/Tokyo", arrivalZone: "Asia/Tokyo", departureUtc: "2026-11-01T03:00:00.000Z", arrivalUtc: "2026-11-01T04:20:00.000Z" },
 ];
 
 export function tripInputError(trip: Omit<DemoTrip, "id">): string | null {
@@ -73,13 +74,13 @@ export function linkedTripDates(id: string, entries: DiaryEntries): string[] {
   return Object.keys(entries).filter((date) => entries[date].tripIds.includes(id)).sort();
 }
 
-export function outsideTripCount(trip: DemoTrip, entries: DiaryEntries): number {
+export function outsideTripCount(trip: DemoTrip, entries: DiaryEntries, allSegments: TravelSegment[]): number {
   const days = linkedTripDates(trip.id, entries).filter((date) => outsideTrip(trip, date)).length;
-  const segments = demoTravelSegments.filter((segment) => segment.tripId === trip.id &&
+  const segments = allSegments.filter((segment) => segment.tripId === trip.id &&
     (outsideTrip(trip, segment.departureLocal.slice(0, 10)) || outsideTrip(trip, segment.arrivalLocal.slice(0, 10)))).length;
   return days + segments;
 }
 
-export function canDeleteDemoTrip(id: string, entries: DiaryEntries): boolean {
-  return !(linkedTripDates(id, entries).length || demoTravelSegments.some((segment) => segment.tripId === id));
+export function canDeleteDemoTrip(id: string, entries: DiaryEntries, segments: TravelSegment[]): boolean {
+  return !(linkedTripDates(id, entries).length || segments.some((segment) => segment.tripId === id));
 }
