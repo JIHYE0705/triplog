@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { demoEntries } from "../lib/demo-diary.ts";
-import { parseDiaryEntries, putVisit, reorderVisit, visitInputError } from "../lib/diary.ts";
+import { parseDiaryEntries, putVisit, reorderVisit, visitInputError, visitPhotos, withVisitPhotos } from "../lib/diary.ts";
 import { canDeleteDemoTrip, linkedTripDates, outsideTripCount } from "../lib/demo-trips.ts";
 
 test("three untimed visits keep their individual notes, manual order and separate diary", () => {
@@ -64,4 +64,38 @@ test("daily multi-trip links drive trip details and deletion guards without infe
   assert.equal(canDeleteDemoTrip("unlinked", parsed, []), true);
   assert.equal(outsideTripCount({ id: "second", startsOn: "2026-11-01", endsOn: "2026-11-02" }, parsed, []), 1);
   assert.deepEqual(reorderVisit(parsed["2026-11-03"], "one", -1), parsed["2026-11-03"]);
+});
+
+test("photo collections preserve legacy records, separate cover from order and survive date moves", () => {
+  const date = "2026-10-26";
+  const visit = demoEntries[date].visits[0];
+  assert.deepEqual(visitPhotos(visit), ["/demo/coffee.jpg"]);
+  const photos = ["/demo/coffee.jpg", "/demo/kyoto.jpg"];
+  const changed = withVisitPhotos(visit, photos, photos[1]);
+  assert.equal(changed.photo, photos[1]);
+  assert.deepEqual(changed.photos, photos, "choosing cover does not reorder photos");
+  const reordered = withVisitPhotos(changed, [...photos].reverse());
+  assert.equal(reordered.photo, photos[1], "reordering preserves cover");
+  const entries = putVisit(demoEntries, date, "2026-11-04", reordered);
+  assert.deepEqual(parseDiaryEntries(JSON.stringify(entries))["2026-11-04"].visits[0], reordered);
+  assert.equal(reordered.note, visit.note);
+  assert.deepEqual(visitPhotos(visit), [photos[0]], "original remains unchanged");
+  const removedCover = withVisitPhotos(changed, [photos[0]]);
+  assert.equal(removedCover.photo, photos[0]);
+  const empty = withVisitPhotos(removedCover, []);
+  assert.equal(empty.photo, undefined);
+  assert.deepEqual(visitPhotos(empty), []);
+  assert.deepEqual(visitPhotos(putVisit(demoEntries, date, date, empty)[date].visits[0]), []);
+});
+
+test("photo storage rejects duplicates, unknown files and dangling covers without changing old records", () => {
+  const date = "2026-10-26";
+  const entry = demoEntries[date];
+  const visit = entry.visits[0];
+  for (const invalid of [
+    { photos: null }, { photos: "bad" }, { photos: ["/demo/coffee.jpg", "/demo/coffee.jpg"] },
+    { photos: ["https://example.com/private.jpg"] }, { photos: [null] },
+    { photos: ["/demo/kyoto.jpg"] }, { photos: [] }, { photos: ["/demo/coffee.jpg"], photo: undefined },
+  ]) assert.throws(() => parseDiaryEntries(JSON.stringify({ [date]: { ...entry, visits: [{ ...visit, ...invalid }] } })));
+  assert.deepEqual(parseDiaryEntries(JSON.stringify(demoEntries)), demoEntries);
 });
