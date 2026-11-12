@@ -114,6 +114,7 @@ export function TripsWorkspace({ view, id }: { view: View; id?: string }) {
             return <li key={date}><Link className="trip-day-link" href={`/diary/${date}`}><h3><time dateTime={date}>{fullDate(date)}</time> <span>일간 보기 →</span></h3></Link>
               {outsideTrip(trip!, date) && <p className="trip-warning">여행 기간 밖 · 기록은 유지됩니다</p>}
               {entry && entry.visits.filter((visit) => visit.tripId === trip!.id).length > 0 && <p>{entry.visits.filter((visit) => visit.tripId === trip!.id).map((visit) => visit.place).join(" · ")}</p>}
+              {entry && <div className="trip-visit-photos">{entry.visits.filter((visit) => visit.tripId === trip!.id && visit.photo).map((visit) => <Image key={visit.id} src={visit.photo!} width={176} height={132} sizes="88px" alt={`${visit.place} 대표 예시 사진`} />)}</div>}
               {entry?.diary && <p className="trip-meta">{entry.diary}</p>}
             </li>;
           })}</ol> : <p className="trip-empty">{days.length ? "조회 기간에 연결된 기록이 없어요." : "이 여행에 연결된 기록이 없어요. 날짜가 겹치는 일기를 자동으로 연결하지 않습니다."}</p>}
